@@ -17,7 +17,7 @@ import threading
 # ============================================================================
 
 # Slack Bot Token (OAuth & Permissions → Bot User OAuth Token)
-SLACK_BOT_TOKEN = "xoxb-10313122964370-10341631935168-B02UyxaXrHvVqIr4FlZbZSOX"
+SLACK_BOT_TOKEN = "xoxb-1244"
 
 # MongoDB Setup
 client = MongoClient("mongodb://localhost:27017/")
@@ -641,3 +641,4 @@ if __name__ == '__main__':
     
     # Run Flask app
     app.run(debug=True, host='0.0.0.0', port=5001, use_reloader=False)
+
