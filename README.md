@@ -185,11 +185,11 @@ If you use this work, please cite:
 
 ## 🤝 Contributors
 
-- **Joshitha Chennamsetty**
+- Prof. K. L. V. G. Krishna Murthy
+- Joshitha Chennamsetty
 - Venkata Vaishnavi Uppiretla  
 - Ravi Varma Chakrala  
 - Bharath Chandra Sai Sakhamuri  
-- Prof. K. L. V. G. Krishna Murthy  
 
 ---
 
