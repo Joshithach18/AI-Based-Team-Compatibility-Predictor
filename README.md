@@ -42,37 +42,71 @@ The system follows a **multi-stage pipeline**:
 
 ## 📂 Repository Structure
 AI-Based-Team-Compatibility-Predictor/
+
 │
+
 ├── app.py                     # Main Flask application (routes + backend logic)
+
 ├── app1.py                    # Secondary/experimental Flask app (testing or alternate flow)
+
+
 │
+
 ├── aisubmodule.py              # LLM-based project role & team size generator
+
 ├── technicalscore.py           # Technical skill scoring mechanism
+
 ├── behavioral_score.py         # Behavioral score computation logic
+
 ├── compatibilitycheck.py       # Pairwise & team compatibility calculations
+
 ├── trainedData.py              # Model loading & inference utilities
+
 │
+
 ├── behavioral_model.pkl        # Fine-tuned RoBERTa personality model
+
 │
+
 ├── data/
+
 │   ├── TrainingData.xlsx       # Personality training dataset
+
 │   ├── UpdatedDataset.xlsx     # Employee profiling dataset
+
 │
+
 ├── templates/                  # HTML templates (Flask frontend)
+
 │   ├── index.html              # Landing page
+
 │   ├── teamformation.html      # Team formation input & results page
+
 │   ├── dashboard.html          # Compatibility scores & analytics dashboard
+
+
 │   └── monitor.html            # Real-time behavioral monitoring page
+
 │
+
 ├── static/                     # Static assets
+
 │   ├── css/
+
 │   ├── js/
+
 │   └── images/
+
 │
+
 ├── requirements.txt            # Python dependencies
+
 ├── venv/                       # Virtual environment (not pushed to GitHub)
+
 │
+
 └── README.md                   # Project documentation
+
 
 
 
