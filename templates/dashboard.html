@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Team Compatibility Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafc;
+            color: #2c3e50;
+        }
+        .header {
+            background: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .user-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .logout-btn:hover {
+            background: #c0392b;
+            transform: translateY(-1px);
+        }
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            min-height: calc(100vh - 100px);
+        }
+        .sidebar {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            height: fit-content;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .form-team-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+        }
+        .form-team-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.3);
+        }
+        .nav-item {
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-item:hover {
+            background: #ecf0f1;
+            transform: translateX(5px);
+        }
+        .nav-item.active {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+        .nav-badge {
+            background: #e74c3c;
+            color: white;
+            font-size: 0.8rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        .nav-item.active .nav-badge {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .content {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .welcome-section {
+            text-align: center;
+            padding: 3rem 0;
+        }
+        .welcome-section h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+        .welcome-section p {
+            font-size: 1.2rem;
+            color: #5a6c7d;
+            margin-bottom: 2rem;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+        .stat-card:nth-child(2) {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+        }
+        .stat-card:nth-child(3) {
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        .team-section {
+            margin-top: 3rem;
+        }
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .team-card {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .team-card:hover {
+            border-color: #3498db;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.15);
+        }
+        .team-card h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+        .team-meta {
+            color: #5a6c7d;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        .team-meta div {
+            margin-bottom: 0.3rem;
+        }
+        .team-members {
+            margin-bottom: 1rem;
+        }
+        .members-header {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .member {
+            background: white;
+            padding: 0.5rem 0.8rem;
+            border-radius: 8px;
+            margin-bottom: 0.4rem;
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .member-name {
+            font-weight: 500;
+        }
+        .member-role {
+            color: #3498db;
+            font-size: 0.75rem;
+        }
+        .team-score {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        .score-badge {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .score-badge.medium {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+        .score-badge.low {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        .team-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .action-btn {
+            padding: 0.4rem 0.8rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .view-btn {
+            background: #3498db;
+            color: white;
+        }
+        .monitor-btn {
+            background: #f39c12;
+            color: white;
+        }
+        .action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #5a6c7d;
+        }
+        .empty-state h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+        .empty-state p {
+            margin-bottom: 2rem;
+        }
+        .start-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+        }
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+        .spinner {
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            .sidebar {
+                order: 2;
+            }
+            .content {
+                order: 1;
+            }
+        }
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 1rem;
+            }
+            .header-container {
+                padding: 0 1rem;
+            }
+            .welcome-section h1 {
+                font-size: 2rem;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">TeamPredictor</div>
+            <div class="user-info">
+                <span class="user-name" id="userName">Loading...</span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+    <div class="main-container">
+        <aside class="sidebar">
+            <button class="form-team-btn" onclick="goToTeamFormation()">+ Form New Team</button>
+            <div class="nav-item active" onclick="showSection('dashboard')">
+                <span>📊 Dashboard</span>
+            </div>
+            <div class="nav-item" onclick="showSection('all-teams')">
+                <span>👥 All Teams</span>
+                <span class="nav-badge" id="allTeamsBadge">0</span>
+            </div>
+            <div class="nav-item" onclick="showSection('analytics')">
+                <span>📋 Analytics</span>
+            </div>
+        </aside>
+        <main class="content">
+            <div id="dashboard-section">
+                <div class="welcome-section">
+                    <h1>Welcome to Your Dashboard</h1>
+                    <p>Manage your teams, track compatibility scores, and monitor project success</p>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalTeamsCount">0</div>
+                            <div class="stat-label">Total Teams</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalMembersCount">0</div>
+                            <div class="stat-label">Total Members</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="highestCompatibilityScore">0%</div>
+                            <div class="stat-label">Highest Compatibility</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="team-section">
+                    <h2 class="section-title">🚀 Recent Teams</h2>
+                    <div id="recentTeamsContainer">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading your dashboard...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="all-teams-section" style="display: none;">
+                <h2 class="section-title">👥 All Teams</h2>
+                <div id="allTeamsContainer">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading all teams...</p>
+                    </div>
+                </div>
+            </div>
+            <div id="analytics-section" style="display: none;">
+                <h2 class="section-title">📋 Analytics & Insights</h2>
+                <div class="empty-state">
+                    <h3>Analytics Coming Soon</h3>
+                    <p>Detailed compatibility analysis and team performance insights will be available here</p>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:5000/api';
+        let userData = null;
+        let userTeams = [];
+        async function loadUserData() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/get-user-info`, {
+                    credentials: 'include'
+                });
+                const result = await response.json();
+                if (!result.success) {
+                    window.location.href = '/';
+                    return;
+                }
+                userData = result.data;
+                userTeams = userData.teams || [];
+                document.getElementById('userName').textContent = userData.username;
+                updateDashboardStats();
+                updateNavigationBadges();
+                displayRecentTeams();
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                window.location.href = '/';
+            }
+        }
+        function updateDashboardStats() {
+            if (!userData) return;
+            const totalTeams = userTeams.length;
+            const totalMembers = userTeams.reduce((sum, team) => sum + (team.members?.length || 0), 0);
+            const highestCompatibility = userTeams.length > 0 ? 
+                Math.max(...userTeams.map(team => team.compatibility_score || team.compatibilityScore || 0)) : 0;
+            document.getElementById('totalTeamsCount').textContent = totalTeams;
+            document.getElementById('totalMembersCount').textContent = totalMembers;
+            document.getElementById('highestCompatibilityScore').textContent = `${Math.round(highestCompatibility)}%`;
+        }
+        function updateNavigationBadges() {
+            document.getElementById('allTeamsBadge').textContent = userTeams.length;
+        }
+        function displayRecentTeams() {
+            const container = document.getElementById('recentTeamsContainer');
+            if (userTeams.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No teams formed yet</h3>
+                        <p>Start by creating your first team to see analytics and compatibility scores here</p>
+                        <button class="start-btn" onclick="goToTeamFormation()">Create Your First Team</button>
+                    </div>
+                `;
+            } else {
+                const recentTeams = userTeams
+                    .sort((a, b) => (b.created_date || 0) - (a.created_date || 0))
+                    .slice(0, 3);
+                container.innerHTML = `
+                    <div class="team-grid">
+                        ${recentTeams.map(team => createTeamCard(team)).join('')}
+                    </div>
+                `;
+            }
+        }
+        function displayAllTeams() {
+            const container = document.getElementById('allTeamsContainer');
+            if (userTeams.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No teams found</h3>
+                        <p>Form your first team to start tracking compatibility</p>
+                        <button class="start-btn" onclick="goToTeamFormation()">Form Team</button>
+                    </div>
+                `;
+                return;
+            }
+            const sortedTeams = userTeams.sort((a, b) => (b.created_date || 0) - (a.created_date || 0));
+            container.innerHTML = `
+                <div class="team-grid">
+                    ${sortedTeams.map(team => createTeamCard(team)).join('')}
+                </div>
+            `;
+        }
+        function createTeamCard(team) {
+            const members = team.members || [];
+            const createdDate = team.created_date 
+                ? new Date(team.created_date * 1000).toLocaleDateString()
+                : 'Recent';
+            const compatibilityScore = Math.round(team.compatibility_score || team.compatibilityScore || 0);
+            let scoreClass = 'score-badge';
+            if (compatibilityScore < 60) scoreClass += ' low';
+            else if (compatibilityScore < 80) scoreClass += ' medium';
+            return `
+                <div class="team-card">
+                    <h3>${team.project_title || team.projectTitle || 'Untitled Project'}</h3>
+                    <div class="team-meta">
+                        <div><strong>Team Size:</strong> ${members.length} members</div>
+                        <div><strong>Created:</strong> ${createdDate}</div>
+                        <div><strong>Project Type:</strong> ${team.project_type || 'Not specified'}</div>
+                        ${team.project_description ? `<div><strong>Description:</strong> ${team.project_description.substring(0, 100)}${team.project_description.length > 100 ? '...' : ''}</div>` : ''}
+                    </div>
+                    <div class="team-members">
+                        <div class="members-header">Team Members:</div>
+                        ${members.slice(0, 4).map(member => `
+                            <div class="member">
+                                <span class="member-name">${member.name}</span>
+                                <span class="member-role">${member.role}</span>
+                            </div>
+                        `).join('')}
+                        ${members.length > 4 ? `<div class="member" style="color: #5a6c7d;">+${members.length - 4} more members</div>` : ''}
+                    </div>
+                    <div class="team-score">
+                        <span>Compatibility Score</span>
+                        <span class="${scoreClass}">${compatibilityScore}%</span>
+                    </div>
+                    <div class="team-actions">
+                        <button class="action-btn view-btn" onclick="viewTeamDetails('${team.id}')">View Details</button>
+                        <button class="action-btn monitor-btn" onclick="monitorTeam('${team.id}')">Monitor</button>
+                    </div>
+                </div>
+            `;
+        }
+        function showSection(sectionName) {
+            document.querySelectorAll('[id$="-section"]').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.getElementById(sectionName + '-section').style.display = 'block';
+            event.target.closest('.nav-item').classList.add('active');
+            switch(sectionName) {
+                case 'all-teams':
+                    displayAllTeams();
+                    break;
+            }
+        }
+        function goToTeamFormation() {
+            window.location.href = '/team-formation';
+        }
+        function viewTeamDetails(teamId) {
+            const team = userTeams.find(t => t.id === teamId);
+            if (!team) {
+                alert('Team not found');
+                return;
+            }
+            const compatibilityScore = Math.round(team.compatibility_score || team.compatibilityScore || 0);
+            let detailsHTML = `
+                <div style="max-width: 600px; max-height: 80vh; overflow-y: auto; margin: 20px auto; padding: 25px; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.15);">
+                    <h3 style="margin-bottom: 20px; color: #2c3e50; font-size: 1.4rem; border-bottom: 2px solid #3498db; padding-bottom: 10px;">${team.project_title || 'Team Details'}</h3>
+                    <div style="margin-bottom: 20px; padding: 15px; background: #f8fafc; border-radius: 10px;">
+                        <h4 style="color: #2c3e50; margin-bottom: 10px;">Project Information</h4>
+                        <p style="margin: 8px 0; color: #5a6c7d;"><strong>Project Type:</strong> ${team.project_type || 'Not specified'}</p>
+                        <p style="margin: 8px 0; color: #5a6c7d;"><strong>Team Size:</strong> ${team.members?.length || 0} members</p>
+                        <p style="margin: 8px 0; color: #5a6c7d;"><strong>Created:</strong> ${team.created_date ? new Date(team.created_date * 1000).toLocaleDateString() : 'Unknown'}</p>
+                        <p style="margin: 8px 0; color: #5a6c7d;"><strong>Compatibility Score:</strong> <span style="color: ${compatibilityScore >= 80 ? '#27ae60' : compatibilityScore >= 60 ? '#f39c12' : '#e74c3c'}; font-weight: bold;">${compatibilityScore}%</span></p>
+                        ${team.project_description ? `<p style="margin: 8px 0; color: #5a6c7d;"><strong>Description:</strong> ${team.project_description}</p>` : ''}
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #2c3e50; margin-bottom: 15px;">Team Members</h4>
+                        ${(team.members || []).map((member, index) => `
+                            <div style="margin: 10px 0; padding: 15px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #3498db;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <strong style="color: #2c3e50; font-size: 1.1rem;">${member.name}</strong>
+                                    <span style="background: #3498db; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.8rem;">${member.role}</span>
+                                </div>
+                                ${member.skills && member.skills.length > 0 ? `
+                                    <div style="margin: 8px 0;">
+                                        <strong style="color: #34495e; font-size: 0.9rem;">Skills:</strong>
+                                        <div style="margin-top: 5px;">
+                                            ${member.skills.map(skill => `<span style="background: #ecf0f1; color: #2c3e50; padding: 2px 6px; border-radius: 10px; font-size: 0.8rem; margin-right: 5px; display: inline-block; margin-bottom: 3px;">${skill}</span>`).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                ${member.experience_years ? `<div style="color: #5a6c7d; font-size: 0.9rem; margin: 5px 0;"><strong>Experience:</strong> ${member.experience_years} years</div>` : ''}
+                                <div style="display: flex; gap: 15px; margin-top: 8px;">
+                                    ${member.technical_score ? `<span style="color: #5a6c7d; font-size: 0.85rem;"><strong>Technical:</strong> ${member.technical_score}%</span>` : ''}
+                                    ${member.behavioral_score ? `<span style="color: #5a6c7d; font-size: 0.85rem;"><strong>Behavioral:</strong> ${member.behavioral_score}%</span>` : ''}
+                                    ${member.compatibility_score ? `<span style="color: #5a6c7d; font-size: 0.85rem;"><strong>Individual Compatibility:</strong> ${Math.round(member.compatibility_score)}%</span>` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button onclick="closeModal()" style="background: #3498db; color: white; padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.3s ease;">Close</button>
+                    </div>
+                </div>
+            `;
+            const modal = document.createElement('div');
+            modal.id = 'teamModal';
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+                background: rgba(0,0,0,0.6); z-index: 1000; 
+                display: flex; align-items: center; justify-content: center;
+            `;
+            modal.innerHTML = detailsHTML;
+            modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+            document.body.appendChild(modal);
+        }
+        function closeModal() {
+            const modal = document.getElementById('teamModal');
+            if (modal) modal.remove();
+        }
+        window.closeModal = closeModal;
+        function monitorTeam(teamId) {
+            window.location.href = `/monitor?team_id=${teamId}`;
+        }
+        async function logout() {
+            try {
+                sessionStorage.clear();
+                localStorage.clear();
+                window.location.href = '/';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = '/';
+            }
+        }
+        window.addEventListener('load', loadUserData);
+        setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                loadUserData();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Team - Team Compatibility Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafc;
+            color: #2c3e50;
+        }
+        
+        .header {
+            background: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .back-btn {
+            background: #6c757d;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .back-btn:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .progress-bar {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+        
+        .progress-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #e2e8f0;
+            z-index: 1;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 1px;
+        }
+        
+        .step {
+            background: white;
+            border: 3px solid #e2e8f0;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            z-index: 2;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .step.active {
+            border-color: #3498db;
+            color: #3498db;
+        }
+        
+        .step.completed {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border-color: #3498db;
+            color: white;
+        }
+        
+        .step-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+        
+        .step-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #5a6c7d;
+            text-align: center;
+            width: 120px;
+        }
+        
+        .step-label.active {
+            color: #3498db;
+        }
+        
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            min-height: 600px;
+        }
+        
+        .step-content {
+            display: none;
+        }
+        
+        .step-content.active {
+            display: block;
+        }
+        
+        .step-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+            text-align: center;
+        }
+        
+        .step-description {
+            font-size: 1.1rem;
+            color: #5a6c7d;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        .form-group textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-primary:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        
+        .analysis-result {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .result-item {
+            margin-bottom: 1rem;
+        }
+        
+        .result-label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .result-value {
+            color: #5a6c7d;
+            font-size: 1.1rem;
+        }
+        
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .role-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem;
+        }
+        
+        .role-name {
+            font-weight: 600;
+            color: #3498db;
+            margin-bottom: 0.5rem;
+        }
+        
+        .role-level {
+            background: #3498db;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+            display: inline-block;
+        }
+        
+        .role-skills {
+            font-size: 0.9rem;
+            color: #5a6c7d;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .spinner {
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .team-results {
+            margin-top: 2rem;
+        }
+        
+        .team-option {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .team-option:hover {
+            border-color: #3498db;
+        }
+        
+        .team-option.recommended {
+            border-color: #2ecc71;
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(39, 174, 96, 0.05));
+        }
+        
+        .team-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .team-rank {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .compatibility-score {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .team-members-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .team-member {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .member-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .member-role {
+            color: #3498db;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .member-scores {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .score-badge {
+            background: #e8f4f8;
+            color: #2980b9;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .select-team-btn {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+        
+        .select-team-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.3);
+        }
+        
+        .candidates-section {
+            margin-top: 2rem;
+        }
+        
+        .candidates-by-role {
+            margin-bottom: 2rem;
+        }
+        
+        .role-header {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 1rem;
+            border-radius: 12px 12px 0 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .candidates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+        }
+        
+        .candidate-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        .candidate-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .candidate-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .candidate-scores {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+            flex-wrap: wrap;
+        }
+        
+        .candidate-score {
+            background: #3498db;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+        
+        .personality-traits {
+            margin-top: 0.8rem;
+            font-size: 0.8rem;
+            color: #5a6c7d;
+            background: #f1f5f9;
+            padding: 0.8rem;
+            border-radius: 8px;
+        }
+        
+        .trait-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.3rem;
+        }
+        
+        .trait-label {
+            font-weight: 500;
+        }
+        
+        .trait-value {
+            color: #3498db;
+            font-weight: 600;
+        }
+        
+        .legend {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #e8f4f8;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #2c3e50;
+        }
+        
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border: 1px solid #fcc;
+        }
+        
+        .success-message {
+            background: #efe;
+            color: #363;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border: 1px solid #cfc;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .progress-steps {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+            
+            .progress-line {
+                display: none;
+            }
+            
+            .step-labels {
+                flex-wrap: wrap;
+                gap: 1rem;
+                justify-content: center;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .candidates-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .team-members-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">TeamPredictor</div>
+            <a href="/dashboard" class="back-btn">Back to Dashboard</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="progress-bar">
+            <div class="progress-steps">
+                <div class="progress-line">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="step active" id="step1">1</div>
+                <div class="step" id="step2">2</div>
+                <div class="step" id="step3">3</div>
+                <div class="step" id="step4">4</div>
+                <div class="step" id="step5">5</div>
+            </div>
+            <div class="step-labels">
+                <div class="step-label active">Project Input</div>
+                <div class="step-label">AI Analysis</div>
+                <div class="step-label">Technical Scoring</div>
+                <div class="step-label">Behavioral Analysis</div>
+                <div class="step-label">Team Formation</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="step-content active" id="content1">
+                <h2 class="step-title">Project Information</h2>
+                <p class="step-description">Enter your project details to get AI-powered team recommendations</p>
+                
+                <div class="form-group">
+                    <label for="projectTitle">Project Title</label>
+                    <input type="text" id="projectTitle" placeholder="Enter your project title...">
+                </div>
+                
+                <div class="form-group">
+                    <label for="projectDescription">Project Description</label>
+                    <textarea id="projectDescription" placeholder="Describe your project requirements, goals, and scope..."></textarea>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="analyzeProject()" id="analyzeBtn">Analyze Project</button>
+                </div>
+            </div>
+
+            <div class="step-content" id="content2">
+                <h2 class="step-title">AI Analysis Results</h2>
+                <p class="step-description">Based on your project description, here are the recommended requirements</p>
+                
+                <div class="analysis-result" id="analysisResults">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Analyzing your project...</p>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="previousStep()">← Previous</button>
+                    <button class="btn btn-primary" onclick="calculateTechnicalScores()" id="technicalBtn" style="display: none;">Calculate Technical Scores</button>
+                </div>
+            </div>
+
+            <div class="step-content" id="content3">
+                <h2 class="step-title">Technical Scoring</h2>
+                <p class="step-description">Top candidates for each role based on technical skills and experience</p>
+                
+                <div id="technicalResults">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Calculating technical scores...</p>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="previousStep()">← Previous</button>
+                    <button class="btn btn-primary" onclick="calculateBehavioralScores()" id="behavioralBtn" style="display: none;">Analyze Behavioral Compatibility</button>
+                </div>
+            </div>
+
+            <div class="step-content" id="content4">
+                <h2 class="step-title">Behavioral Analysis</h2>
+                <p class="step-description">Personality trait analysis for optimal team compatibility</p>
+                
+                <div id="behavioralResults">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Analyzing behavioral compatibility...</p>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="previousStep()">← Previous</button>
+                    <button class="btn btn-primary" onclick="formTeams()" id="formTeamsBtn" style="display: none;">Form Optimal Teams</button>
+                </div>
+            </div>
+
+            <div class="step-content" id="content5">
+                <h2 class="step-title">Recommended Teams</h2>
+                <p class="step-description">AI-generated team combinations for your project</p>
+                
+                <div class="team-results" id="teamResults">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Forming optimal teams...</p>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="previousStep()">← Previous</button>
+                    <button class="btn btn-primary" onclick="goToDashboard()">Complete & Go to Dashboard</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:5000/api';
+        let currentStep = 1;
+        let projectData = {};
+        let analysisData = {};
+        let technicalData = {};
+        let behavioralData = {};
+        let teamsData = {};
+
+        function updateProgress() {
+            const progressFill = document.getElementById('progressFill');
+            const progress = ((currentStep - 1) / 4) * 100;
+            progressFill.style.width = progress + '%';
+
+            document.querySelectorAll('.step').forEach((step, index) => {
+                step.classList.remove('active', 'completed');
+                if (index + 1 < currentStep) {
+                    step.classList.add('completed');
+                } else if (index + 1 === currentStep) {
+                    step.classList.add('active');
+                }
+            });
+
+            document.querySelectorAll('.step-label').forEach((label, index) => {
+                label.classList.remove('active');
+                if (index + 1 === currentStep) {
+                    label.classList.add('active');
+                }
+            });
+        }
+
+        function showStep(step) {
+            document.querySelectorAll('.step-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`content${step}`).classList.add('active');
+            currentStep = step;
+            updateProgress();
+        }
+
+        function nextStep() {
+            if (currentStep < 5) {
+                showStep(currentStep + 1);
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                showStep(currentStep - 1);
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            document.querySelector('.step-content.active').prepend(errorDiv);
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.textContent = message;
+            document.querySelector('.step-content.active').prepend(successDiv);
+            setTimeout(() => successDiv.remove(), 3000);
+        }
+
+        async function analyzeProject() {
+            const title = document.getElementById('projectTitle').value.trim();
+            const description = document.getElementById('projectDescription').value.trim();
+
+            if (!validateProjectInput()) {
+                return;
+            }
+
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = '<div class="spinner"></div> Analyzing...';
+
+            try {
+                projectData = { projectTitle: title, projectDescription: description };
+                
+                const response = await fetch(`${API_BASE_URL}/analyze-project`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(projectData),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    analysisData = result.data;
+                    nextStep();
+                    displayAnalysisResults(result.data);
+                    trackProgress(2, 'Project analyzed successfully');
+                } else {
+                    showError(result.message || 'Error analyzing project');
+                }
+
+            } catch (error) {
+                handleApiError(error, 'Project analysis');
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = 'Analyze Project';
+            }
+        }
+
+        function displayAnalysisResults(analysis) {
+            const resultsContainer = document.getElementById('analysisResults');
+            resultsContainer.innerHTML = `
+                <div class="result-item">
+                    <div class="result-label">Project Type:</div>
+                    <div class="result-value">${analysis.project_type}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Recommended Team Size:</div>
+                    <div class="result-value">${analysis.team_size} members</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Required Roles:</div>
+                    <div class="roles-grid">
+                        ${analysis.roles.map(role => `
+                            <div class="role-card">
+                                <div class="role-name">${role.role}</div>
+                                <div class="role-level">${role.experience_level}</div>
+                                <div class="role-skills">Skills: ${role.skills.join(', ')}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('technicalBtn').style.display = 'inline-block';
+        }
+
+        async function calculateTechnicalScores() {
+            nextStep();
+            trackProgress(3, 'Starting technical score calculation');
+
+            const technicalBtn = document.getElementById('technicalBtn');
+            technicalBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/calculate-technical-scores`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        projectTitle: projectData.projectTitle,
+                        analysisData: analysisData
+                    }),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    technicalData = result.data;
+                    displayTechnicalResults(result.data);
+                    trackProgress(3, 'Technical scores calculated successfully');
+                } else {
+                    showError(result.message || 'Error calculating technical scores');
+                    previousStep();
+                }
+
+            } catch (error) {
+                handleApiError(error, 'Technical scoring');
+                previousStep();
+            } finally {
+                technicalBtn.disabled = false;
+            }
+        }
+
+        function displayTechnicalResults(technicalResults) {
+            const resultsContainer = document.getElementById('technicalResults');
+            
+            const rolesHtml = Object.keys(technicalResults).map(role => {
+                const candidates = technicalResults[role];
+                return `
+                    <div class="candidates-by-role">
+                        <div class="role-header">${role}</div>
+                        <div class="candidates-grid">
+                            ${candidates.map(candidate => `
+                                <div class="candidate-card">
+                                    <div class="candidate-name">${candidate.name}</div>
+                                    <div class="candidate-scores">
+                                        <div class="candidate-score">Technical: ${candidate.technical_score}%</div>
+                                        <div class="score-badge">Exp: ${candidate.experience || 0} yrs</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            resultsContainer.innerHTML = `
+                <div class="candidates-section">
+                    ${rolesHtml}
+                </div>
+            `;
+            document.getElementById('behavioralBtn').style.display = 'inline-block';
+        }
+
+        async function calculateBehavioralScores() {
+            nextStep();
+            trackProgress(4, 'Starting behavioral analysis');
+
+            const behavioralBtn = document.getElementById('behavioralBtn');
+            behavioralBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/calculate-behavioral-scores`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        projectTitle: projectData.projectTitle,
+                        analysisData: analysisData
+                    }),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    behavioralData = result.data;
+                    displayBehavioralResults(result.data);
+                    trackProgress(4, 'Behavioral analysis completed successfully');
+                } else {
+                    showError(result.message || 'Error calculating behavioral scores');
+                    previousStep();
+                }
+
+            } catch (error) {
+                handleApiError(error, 'Behavioral analysis');
+                previousStep();
+            } finally {
+                behavioralBtn.disabled = false;
+            }
+        }
+
+        function displayBehavioralResults(behavioralResults) {
+            const resultsContainer = document.getElementById('behavioralResults');
+            const candidates = behavioralResults.candidates;
+            
+            console.log('Displaying behavioral results for candidates:', candidates);
+            
+            if (!candidates || candidates.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="error-message">
+                        No candidates found for behavioral analysis. Please check if technical scores were calculated correctly.
+                    </div>
+                `;
+                return;
+            }
+            
+            const candidatesByRole = {};
+            candidates.forEach(candidate => {
+                const roleKey = `${candidate.role} (${candidate.experience_level || 'Any'})`;
+                if (!candidatesByRole[roleKey]) {
+                    candidatesByRole[roleKey] = [];
+                }
+                candidatesByRole[roleKey].push(candidate);
+            });
+
+            const rolesHtml = Object.keys(candidatesByRole).map(role => {
+                const roleCandidates = candidatesByRole[role];
+                return `
+                    <div class="candidates-by-role">
+                        <div class="role-header">${role}</div>
+                        <div class="candidates-grid">
+                            ${roleCandidates.map(candidate => `
+                                <div class="candidate-card">
+                                    <div class="candidate-name">${candidate.name}</div>
+                                    <div class="candidate-scores">
+                                        <div class="candidate-score">Technical: ${candidate.technical_score}%</div>
+                                        <div class="candidate-score">Behavioral: ${candidate.behavioral_score}%</div>
+                                    </div>
+                                    <div class="personality-traits">
+                                        <div class="trait-row">
+                                            <span class="trait-label">Openness:</span>
+                                            <span class="trait-value">${candidate.personality.openness}/5</span>
+                                        </div>
+                                        <div class="trait-row">
+                                            <span class="trait-label">Conscientiousness:</span>
+                                            <span class="trait-value">${candidate.personality.conscientiousness}/5</span>
+                                        </div>
+                                        <div class="trait-row">
+                                            <span class="trait-label">Extraversion:</span>
+                                            <span class="trait-value">${candidate.personality.extraversion}/5</span>
+                                        </div>
+                                        <div class="trait-row">
+                                            <span class="trait-label">Agreeableness:</span>
+                                            <span class="trait-value">${candidate.personality.agreeableness}/5</span>
+                                        </div>
+                                        <div class="trait-row">
+                                            <span class="trait-label">Neuroticism:</span>
+                                            <span class="trait-value">${candidate.personality.neuroticism}/5</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            resultsContainer.innerHTML = `
+                <div class="candidates-section">
+                    ${rolesHtml}
+                </div>
+                <div class="legend">
+                    <strong>Personality Traits (Big Five Model):</strong><br>
+                    • <strong>Openness:</strong> Creativity, intellectual curiosity, willingness to try new experiences<br>
+                    • <strong>Conscientiousness:</strong> Organization, responsibility, dependability, work ethic<br>
+                    • <strong>Extraversion:</strong> Social energy, assertiveness, tendency to seek stimulation from others<br>
+                    • <strong>Agreeableness:</strong> Cooperation, trust, empathy, tendency to be compassionate<br>
+                    • <strong>Neuroticism:</strong> Emotional stability, stress resilience (lower scores indicate better stability)
+                </div>
+            `;
+
+            document.getElementById('formTeamsBtn').style.display = 'inline-block';
+        }
+
+        async function formTeams() {
+            nextStep();
+            trackProgress(5, 'Starting team formation');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/form-teams`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        projectTitle: projectData.projectTitle,
+                        analysisData: analysisData,
+                        technicalData: technicalData,
+                        behavioralData: behavioralData
+                    }),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    teamsData = result.data;
+                    displayTeams(result.data);
+                    trackProgress(5, 'Teams formed successfully');
+                } else {
+                    showError(result.message || 'Error forming teams');
+                    previousStep();
+                }
+
+            } catch (error) {
+                handleApiError(error, 'Team formation');
+                previousStep();
+            }
+        }
+
+        function displayTeams(teams) {
+            const resultsContainer = document.getElementById('teamResults');
+            
+            if (!teams || teams.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="error-message">
+                        No suitable teams could be formed. Please try with different project requirements.
+                    </div>
+                `;
+                return;
+            }
+
+            resultsContainer.innerHTML = teams.map((team, index) => `
+                <div class="team-option ${team.recommended ? 'recommended' : ''}">
+                    <div class="team-header">
+                        <div class="team-rank">Team Option ${index + 1} ${team.recommended ? '(Recommended)' : ''}</div>
+                        <div class="compatibility-score">${team.compatibility_score}% Compatible</div>
+                    </div>
+                    <div class="team-members-grid">
+                        ${team.members.map(member => `
+                            <div class="team-member">
+                                <div class="member-name">${member.name}</div>
+                                <div class="member-role">${member.role}</div>
+                                <div class="member-scores">
+                                    <div class="score-badge">Tech: ${member.technical_score || 0}%</div>
+                                    <div class="score-badge">Behavioral: ${member.behavioral_score || 0}%</div>
+                                    <div class="score-badge">Exp: ${member.experience || 0} yrs</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="select-team-btn" onclick="selectTeam(${index})">
+                        ${team.recommended ? 'Select Recommended Team' : 'Select This Team'}
+                    </button>
+                </div>
+            `).join('');
+        }
+        let isSelectingTeam = false;
+        async function selectTeam(teamIndex) {
+            if (isSelectingTeam) {
+                return;
+            }
+            const selectedTeam = teamsData[teamIndex];
+            
+            if (!selectedTeam) {
+                showError('Team not found');
+                return;
+            }
+            const allSelectButtons = document.querySelectorAll('.select-team-btn');
+            allSelectButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.style.opacity = '0.6';
+                btn.style.cursor = 'not-allowed';
+            });
+
+            isSelectingTeam = true;
+            try {
+                const teamToSave = {
+                    projectTitle: projectData.projectTitle,
+                    projectDescription: projectData.projectDescription,
+                    projectType: analysisData.project_type,
+                    members: selectedTeam.members,
+                    compatibilityScore: selectedTeam.compatibility_score,
+                    teamSize: selectedTeam.members.length
+                };
+
+                const response = await fetch(`${API_BASE_URL}/save-team`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(teamToSave),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showSuccess(`Team ${teamIndex + 1} selected successfully! Redirecting to dashboard...`);
+                    clearProgress();
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 2000);
+                } else {
+                    showError(result.message || 'Error saving team');
+                    allSelectButtons.forEach(btn => {
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                        btn.style.cursor = 'pointer';
+                    });
+                    isSelectingTeam = false;
+                } 
+
+            } catch (error) {
+                handleApiError(error, 'Save team');
+                allSelectButtons.forEach(btn => {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                });
+                isSelectingTeam = false;
+            }
+        }
+
+        function goToDashboard() {
+            clearProgress();
+            window.location.href = '/dashboard';
+        }
+
+        function validateProjectInput() {
+            const title = document.getElementById('projectTitle').value.trim();
+            const description = document.getElementById('projectDescription').value.trim();
+            
+            if (title.length < 3) {
+                showError('Project title must be at least 3 characters long');
+                return false;
+            }
+            
+            if (description.length < 20) {
+                showError('Project description must be at least 20 characters long');
+                return false;
+            }
+            
+            return true;
+        }
+
+        function handleApiError(error, context) {
+            console.error(`${context} error:`, error);
+            
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                showError('Network error: Please check your internet connection and ensure the server is running');
+            } else if (error.name === 'SyntaxError') {
+                showError('Server response error: Please try again');
+            } else {
+                showError(`${context} failed: Please try again`);
+            }
+        }
+
+        function trackProgress(step, action) {
+            console.log(`Step ${step}: ${action} - ${new Date().toISOString()}`);
+        }
+
+        function autoSaveProgress() {
+            if (currentStep > 1) {
+                const progressData = {
+                    currentStep,
+                    projectData,
+                    analysisData,
+                    technicalData,
+                    behavioralData,
+                    teamsData
+                };
+                try {
+                    sessionStorage.setItem('teamFormationProgress', JSON.stringify(progressData));
+                } catch (error) {
+                    console.warn('Could not save progress to session storage:', error);
+                }
+            }
+        }
+
+        function loadProgress() {
+            try {
+                const savedProgress = sessionStorage.getItem('teamFormationProgress');
+                if (savedProgress) {
+                    const progress = JSON.parse(savedProgress);
+                    if (progress.projectData && progress.projectData.projectTitle) {
+                        document.getElementById('projectTitle').value = progress.projectData.projectTitle || '';
+                        document.getElementById('projectDescription').value = progress.projectData.projectDescription || '';
+                    }
+                }
+            } catch (error) {
+                console.warn('Could not load saved progress:', error);
+            }
+        }
+
+        function clearProgress() {
+            try {
+                sessionStorage.removeItem('teamFormationProgress');
+            } catch (error) {
+                console.warn('Could not clear progress:', error);
+            }
+        }
+
+        function addTooltips() {
+            const tooltips = [
+                { selector: '#projectTitle', text: 'Enter a descriptive title for your project' },
+                { selector: '#projectDescription', text: 'Provide detailed information about project scope, requirements, and goals. Be specific about technologies, timeline, and deliverables.' }
+            ];
+
+            tooltips.forEach(tooltip => {
+                const element = document.querySelector(tooltip.selector);
+                if (element) {
+                    element.title = tooltip.text;
+                }
+            });
+        }
+
+        updateProgress();
+
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/get-user-teams`, {
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                
+                if (!result.success && response.status === 401) {
+                    window.location.href = '/';
+                    return;
+                }
+                
+                loadProgress();
+                addTooltips();
+                
+            } catch (error) {
+                console.error('Authentication check failed:', error);
+            }
+        });
+
+        window.addEventListener('beforeunload', function (e) {
+            if (currentStep > 1 && currentStep < 5) {
+                e.preventDefault();
+                e.returnValue = 'You have unsaved progress. Are you sure you want to leave?';
+                return 'You have unsaved progress. Are you sure you want to leave?';
+            }
+        });
+
+        setInterval(autoSaveProgress, 10000);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                if (currentStep === 1 && document.getElementById('projectTitle').value && document.getElementById('projectDescription').value) {
+                    analyzeProject();
+                } else if (currentStep === 2 && document.getElementById('technicalBtn').style.display !== 'none') {
+                    calculateTechnicalScores();
+                } else if (currentStep === 3 && document.getElementById('behavioralBtn').style.display !== 'none') {
+                    calculateBehavioralScores();
+                } else if (currentStep === 4 && document.getElementById('formTeamsBtn').style.display !== 'none') {
+                    formTeams();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
