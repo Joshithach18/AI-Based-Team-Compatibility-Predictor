@@ -788,7 +788,7 @@
             try {
                 projectData = { projectTitle: title, projectDescription: description };
                 
-                const response = await fetch(`${API_BASE_URL}/analyze-project`, {
+                const response = await fetch(`${API_BASE_URL}/project-requirements`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -852,7 +852,7 @@
             technicalBtn.disabled = true;
 
             try {
-                const response = await fetch(`${API_BASE_URL}/calculate-technical-scores`, {
+                const response = await fetch(`${API_BASE_URL}/technical-scores`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -860,7 +860,7 @@
                     credentials: 'include',
                     body: JSON.stringify({
                         projectTitle: projectData.projectTitle,
-                        analysisData: analysisData
+                        roles: analysisData.roles
                     }),
                 });
 
@@ -922,7 +922,7 @@
             behavioralBtn.disabled = true;
 
             try {
-                const response = await fetch(`${API_BASE_URL}/calculate-behavioral-scores`, {
+                const response = await fetch(`${API_BASE_URL}/behavioral-scores`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

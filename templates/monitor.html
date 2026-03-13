@@ -137,9 +137,7 @@
             transition: all 0.3s ease;
         }
 
-        .link-btn:hover {
-            background: #218838;
-        }
+        .link-btn:hover { background: #218838; }
 
         .link-btn:disabled {
             background: #ccc;
@@ -152,13 +150,253 @@
             border-radius: 12px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
-        .linked-info h3 {
-            color: #155724;
+        .linked-info h3 { color: #155724; margin-bottom: 0.5rem; }
+
+        .fetch-history-btn {
+            background: #17a2b8;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .fetch-history-btn:hover { background: #138496; }
+        .fetch-history-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* ===================== TEAM COMPATIBILITY PANEL ===================== */
+        .compatibility-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .compatibility-panel h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .compat-scores-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .compat-card {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            border: 2px solid #e0e6ed;
+        }
+
+        .compat-card.declining { border-color: #e74c3c; background: #fff5f5; }
+        .compat-card.improving { border-color: #27ae60; background: #f0fff4; }
+        .compat-card.stable { border-color: #3498db; background: #f0f8ff; }
+
+        .compat-label {
+            font-size: 0.8rem;
+            color: #5a6c7d;
             margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
+        .compat-score-val {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .compat-score-val.initial { color: #3498db; }
+        .compat-score-val.current { color: #2c3e50; }
+
+        .compat-change {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 0.3rem;
+        }
+
+        .compat-change.positive { color: #27ae60; }
+        .compat-change.negative { color: #e74c3c; }
+        .compat-change.neutral { color: #7f8c8d; }
+
+        .trend-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .trend-badge.declining { background: #fde8e8; color: #c0392b; }
+        .trend-badge.improving { background: #e8f8e8; color: #1e8449; }
+        .trend-badge.stable { background: #e8f4f8; color: #2471a3; }
+
+        /* ===================== BEHAVIORAL ANALYSIS PANEL ===================== */
+        .behavioral-panel {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+
+        .behavioral-header {
+            background: linear-gradient(135deg, #8e44ad, #6c3483);
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .behavioral-header h2 { font-size: 1.2rem; }
+
+        .member-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            padding: 1.5rem;
+            background: #fafafa;
+        }
+
+        .member-behavioral-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            border-left: 5px solid #3498db;
+            transition: transform 0.2s ease;
+        }
+
+        .member-behavioral-card:hover { transform: translateY(-2px); }
+        .member-behavioral-card.alert-card { border-left-color: #e74c3c; }
+        .member-behavioral-card.improving-card { border-left-color: #27ae60; }
+        .member-behavioral-card.stable-card { border-left-color: #3498db; }
+
+        .member-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .member-name {
+            font-weight: 700;
+            color: #2c3e50;
+            font-size: 1rem;
+        }
+
+        .member-alert-badge {
+            background: #fde8e8;
+            color: #c0392b;
+            border-radius: 12px;
+            padding: 0.2rem 0.6rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .score-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.7rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .score-box {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 0.7rem;
+            text-align: center;
+        }
+
+        .score-box-label {
+            font-size: 0.7rem;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.3rem;
+        }
+
+        .score-box-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .score-box-value.initial-score { color: #3498db; }
+        .score-box-value.current-score { color: #2c3e50; }
+
+        .score-box.current-box {
+            background: #2c3e50;
+        }
+        .score-box.current-box .score-box-label { color: #aaa; }
+        .score-box.current-box .score-box-value { color: #fff; }
+
+        .fluctuation-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 0.6rem 0.8rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .fluctuation-label { font-size: 0.85rem; color: #5a6c7d; }
+
+        .fluctuation-value {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .fluctuation-value.positive { color: #27ae60; }
+        .fluctuation-value.negative { color: #e74c3c; }
+        .fluctuation-value.neutral { color: #7f8c8d; }
+
+        .member-trend-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .member-trend-badge.declining { background: #fde8e8; color: #c0392b; }
+        .member-trend-badge.improving { background: #e8f8e8; color: #1e8449; }
+        .member-trend-badge.stable { background: #e8f4f8; color: #2471a3; }
+        .member-trend-badge.no-data { background: #f5f5f5; color: #7f8c8d; }
+
+        .messages-count-note {
+            font-size: 0.75rem;
+            color: #aaa;
+            text-align: center;
+            margin-top: 0.4rem;
+        }
+
+        /* ===================== MESSAGES PANEL ===================== */
         .messages-container {
             background: white;
             border-radius: 12px;
@@ -175,9 +413,7 @@
             align-items: center;
         }
 
-        .messages-header h2 {
-            font-size: 1.2rem;
-        }
+        .messages-header h2 { font-size: 1.2rem; }
 
         .stats {
             display: flex;
@@ -196,12 +432,10 @@
             transition: all 0.3s ease;
         }
 
-        .refresh-btn:hover {
-            background: #ecf0f1;
-        }
+        .refresh-btn:hover { background: #ecf0f1; }
 
         .messages-list {
-            max-height: 600px;
+            max-height: 500px;
             overflow-y: auto;
             padding: 1.5rem;
             background: #fafafa;
@@ -220,18 +454,33 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 0.3rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .message-user { font-weight: 600; color: #3498db; }
+        .message-time { font-size: 0.85rem; color: #999; }
+
+        .message-scores-row {
+            display: flex;
+            gap: 0.5rem;
             margin-bottom: 0.5rem;
+            flex-wrap: wrap;
         }
 
-        .message-user {
+        .msg-score-badge {
+            font-size: 0.72rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 10px;
             font-weight: 600;
-            color: #3498db;
         }
 
-        .message-time {
-            font-size: 0.85rem;
-            color: #999;
-        }
+        .msg-score-badge.initial { background: #ddeeff; color: #2471a3; }
+        .msg-score-badge.current { background: #2c3e50; color: #fff; }
+        .msg-score-badge.trend-up { background: #e8f8e8; color: #1e8449; }
+        .msg-score-badge.trend-down { background: #fde8e8; color: #c0392b; }
+        .msg-score-badge.trend-stable { background: #f0f0f0; color: #555; }
 
         .message-text {
             color: #2c3e50;
@@ -248,6 +497,22 @@
             text-align: center;
             padding: 2rem;
             color: #5a6c7d;
+        }
+
+        .section-divider {
+            border: none;
+            border-top: 2px solid #e8edf2;
+            margin: 1.5rem 0;
+        }
+
+        .info-note {
+            background: #e8f4f8;
+            border: 1px solid #bee3f8;
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            font-size: 0.85rem;
+            color: #2471a3;
+            margin-bottom: 1rem;
         }
     </style>
 </head>
@@ -268,6 +533,7 @@
             <div id="projectMeta" class="project-meta"></div>
         </div>
 
+        <!-- Channel Link Section -->
         <div id="channelLinkSection" class="channel-link-section" style="display: none;">
             <h3>📡 Link Slack Channel</h3>
             <p style="margin-bottom: 1rem; color: #856404;">
@@ -279,12 +545,59 @@
             <button id="linkChannelBtn" class="link-btn" onclick="linkChannel()">Link Channel</button>
         </div>
 
+        <!-- Linked Channel Info -->
         <div id="linkedInfoSection" class="linked-info" style="display: none;">
-            <h3>✅ Channel Linked</h3>
-            <p>Connected to: <strong id="linkedChannelName"></strong></p>
-            <p style="margin-top: 0.5rem; font-size: 0.9rem;">Messages are being monitored in real-time</p>
+            <div>
+                <h3>✅ Channel Linked</h3>
+                <p>Connected to: <strong id="linkedChannelName"></strong></p>
+                <p style="margin-top: 0.5rem; font-size: 0.9rem;">Messages are being monitored in real-time</p>
+            </div>
+            <button id="fetchHistoryBtn" class="fetch-history-btn" onclick="fetchChannelHistory()">
+                📥 Sync Slack Messages
+            </button>
         </div>
 
+        <!-- Team Compatibility Panel -->
+        <div id="compatibilityPanel" class="compatibility-panel">
+            <h3>🤝 Team Compatibility Overview</h3>
+            <div class="info-note">
+                Initial compatibility was calculated at team formation. Current compatibility reflects behavioral changes observed through Slack messages (analyzed via RoBERTa AI).
+            </div>
+            <div class="compat-scores-row">
+                <div class="compat-card" id="initialCompatCard">
+                    <div class="compat-label">Initial Compatibility</div>
+                    <div class="compat-score-val initial" id="initialCompatScore">—</div>
+                    <div style="font-size:0.75rem;color:#7f8c8d;margin-top:0.3rem;">At team formation</div>
+                </div>
+                <div class="compat-card" id="currentCompatCard">
+                    <div class="compat-label">Current Compatibility</div>
+                    <div class="compat-score-val current" id="currentCompatScore">—</div>
+                    <div style="font-size:0.75rem;color:#7f8c8d;margin-top:0.3rem;">Based on recent behavior</div>
+                </div>
+                <div class="compat-card" id="compatChangeCard">
+                    <div class="compat-label">Change</div>
+                    <div class="compat-change" id="compatChangeVal">—</div>
+                    <div id="compatTrendBadge" class="trend-badge" style="margin-top:0.5rem;">—</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Member Behavioral Analysis Panel -->
+        <div id="behavioralPanel" class="behavioral-panel">
+            <div class="behavioral-header">
+                <div>
+                    <h2>🧠 Member Behavioral Score Analysis</h2>
+                    <div style="font-size:0.85rem;opacity:0.85;margin-top:0.3rem;">
+                        Initial score (team formation) vs Current score (last 3–5 Slack messages via RoBERTa AI)
+                    </div>
+                </div>
+            </div>
+            <div id="memberCards" class="member-cards-grid">
+                <div class="loading">Analyzing member behavior...</div>
+            </div>
+        </div>
+
+        <!-- Messages Panel -->
         <div id="messagesContainer" class="messages-container" style="display: none;">
             <div class="messages-header">
                 <div>
@@ -306,14 +619,15 @@
         let currentTeamId = null;
         let currentTeam = null;
         let refreshInterval = null;
+        let analyticsInterval = null;
+        // Cache of member behavioral data: { userName: { initial, current, trend } }
+        let memberBehavioralCache = {};
 
-        // Get team ID from URL parameters
         function getTeamIdFromURL() {
             const params = new URLSearchParams(window.location.search);
             return params.get('team_id');
         }
 
-        // Load team data and initialize monitoring
         async function initMonitoring() {
             currentTeamId = getTeamIdFromURL();
             
@@ -324,7 +638,6 @@
             }
 
             try {
-                // Fetch team data
                 const response = await fetch('/api/user-teams');
                 const data = await response.json();
                 
@@ -337,10 +650,7 @@
                         return;
                     }
                     
-                    // Display team info
                     displayTeamInfo();
-                    
-                    // Check if channel is linked
                     await checkChannelLink();
                 } else {
                     showError('Failed to load team data');
@@ -350,27 +660,24 @@
             }
         }
 
-        // Display team information
         function displayTeamInfo() {
             document.getElementById('projectTitle').textContent = currentTeam.project_title || 'Untitled Project';
+            const initialCompat = currentTeam.initial_compatibility_score || currentTeam.compatibility_score || 0;
             document.getElementById('projectMeta').innerHTML = `
-                Team Size: ${currentTeam.members?.length || 0} members • 
-                Created: ${currentTeam.created_date ? new Date(currentTeam.created_date * 1000).toLocaleDateString() : 'Unknown'} • 
-                Compatibility: ${Math.round(currentTeam.compatibility_score || 0)}%
+                Team Size: ${currentTeam.members?.length || 0} members &bull; 
+                Created: ${currentTeam.created_date ? new Date(currentTeam.created_date * 1000).toLocaleDateString() : 'Unknown'} &bull; 
+                Initial Compatibility: <strong>${Math.round(initialCompat)}%</strong>
             `;
         }
 
-        // Check if channel is linked
         async function checkChannelLink() {
             try {
                 const response = await fetch(`/api/slack/get-linked-channel/${currentTeamId}`);
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Channel is linked - show messages
                     showLinkedChannel(data.data);
                 } else {
-                    // Channel not linked - show linking interface
                     await showChannelLinkSection();
                 }
             } catch (error) {
@@ -379,15 +686,14 @@
             }
         }
 
-        // Show channel linking interface
         async function showChannelLinkSection() {
             document.getElementById('channelLinkSection').style.display = 'block';
             document.getElementById('linkedInfoSection').style.display = 'none';
             document.getElementById('messagesContainer').style.display = 'none';
+            document.getElementById('compatibilityPanel').style.display = 'none';
+            document.getElementById('behavioralPanel').style.display = 'none';
             
-            // Load available Slack channels (excluding already linked channels)
             try {
-                // Use the correct endpoint with team_id to exclude this team's channel if already linked
                 const response = await fetch(`/api/slack/available-channels?exclude_team_id=${currentTeamId}`);
                 const data = await response.json();
                 
@@ -414,7 +720,6 @@
             }
         }
 
-        // Link selected channel to project
         async function linkChannel() {
             const select = document.getElementById('channelSelect');
             const channelId = select.value;
@@ -443,12 +748,11 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showSuccess('Channel linked successfully! Loading messages...');
-                    setTimeout(() => {
-                        showLinkedChannel({
-                            channel_id: channelId,
-                            channel_name: channelName
-                        });
+                    showSuccess('Channel linked successfully! Syncing messages...');
+                    setTimeout(async () => {
+                        showLinkedChannel({ channel_id: channelId, channel_name: channelName });
+                        // Auto-fetch history after linking
+                        await fetchChannelHistory();
                     }, 1000);
                 } else {
                     showError(data.message || 'Failed to link channel');
@@ -462,24 +766,186 @@
             }
         }
 
-        // Show linked channel and start message loading
         function showLinkedChannel(linkData) {
             document.getElementById('channelLinkSection').style.display = 'none';
-            document.getElementById('linkedInfoSection').style.display = 'block';
+            document.getElementById('linkedInfoSection').style.display = 'flex';
             document.getElementById('messagesContainer').style.display = 'block';
+            document.getElementById('compatibilityPanel').style.display = 'block';
+            document.getElementById('behavioralPanel').style.display = 'block';
             
             document.getElementById('linkedChannelName').textContent = 
                 `# ${linkData.channel_name || linkData.channel_id}`;
             
-            // Start loading messages
             loadMessages();
+            loadAnalytics();
             
-            // Set up auto-refresh every 5 seconds
             clearInterval(refreshInterval);
-            refreshInterval = setInterval(loadMessages, 5000);
+            clearInterval(analyticsInterval);
+            refreshInterval = setInterval(loadMessages, 10000);
+            analyticsInterval = setInterval(loadAnalytics, 30000);
         }
 
-        // Load messages for current project
+        // ============================================================
+        // FETCH CHANNEL HISTORY (fix for "no messages" issue)
+        // ============================================================
+        async function fetchChannelHistory() {
+            const btn = document.getElementById('fetchHistoryBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Syncing...';
+            
+            try {
+                // Try app.py endpoint first (same port, always available)
+                // Falls back to app1.py on port 5001
+                let response;
+                let data;
+
+                try {
+                    response = await fetch(`/api/slack/fetch-history/${currentTeamId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    data = await response.json();
+                } catch (e) {
+                    // Try app1.py on port 5001
+                    response = await fetch(`http://localhost:5001/api/fetch-channel-history/${currentTeamId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    data = await response.json();
+                }
+                
+                if (data.success) {
+                    showSuccess(`✅ ${data.message}`);
+                    // Reload messages and analytics after a short delay for DB to settle
+                    setTimeout(async () => {
+                        await loadMessages();
+                        await loadAnalytics();
+                    }, 800);
+                } else {
+                    showError('Sync issue: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                showError('Failed to sync: ' + error.message + '. Make sure the Slack bot is invited to the channel.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '📥 Sync Slack Messages';
+            }
+        }
+
+        // ============================================================
+        // ANALYTICS & BEHAVIORAL SCORES
+        // ============================================================
+        async function loadAnalytics() {
+            try {
+                // Try app1 first for analytics
+                let response;
+                try {
+                    response = await fetch(`http://localhost:5001/api/team-analytics/${currentTeamId}`);
+                } catch (e) {
+                    response = await fetch(`/api/slack/get-analytics/${currentTeamId}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    displayCompatibility(data.data);
+                    displayMemberBehavioralCards(data.data);
+                }
+            } catch (error) {
+                console.warn('Analytics load error:', error.message);
+            }
+        }
+
+        function displayCompatibility(analytics) {
+            const teamCompat = analytics.team_compatibility;
+            if (!teamCompat) return;
+
+            const initialScore = teamCompat.initial_score || 0;
+            const currentScore = teamCompat.current_score || 0;
+            const change = teamCompat.change || 0;
+            const trend = teamCompat.trend || 'stable';
+
+            document.getElementById('initialCompatScore').textContent = initialScore.toFixed(1) + '%';
+            document.getElementById('currentCompatScore').textContent = currentScore.toFixed(1) + '%';
+            
+            const changeEl = document.getElementById('compatChangeVal');
+            changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '%';
+            changeEl.className = 'compat-change ' + (change > 0 ? 'positive' : change < 0 ? 'negative' : 'neutral');
+
+            const badge = document.getElementById('compatTrendBadge');
+            badge.className = `trend-badge ${trend}`;
+            const icons = { improving: '📈 Improving', declining: '📉 Declining', stable: '➡️ Stable' };
+            badge.textContent = icons[trend] || '➡️ Stable';
+
+            // Color the current compat card
+            const currentCard = document.getElementById('currentCompatCard');
+            currentCard.className = `compat-card ${trend}`;
+        }
+
+        function displayMemberBehavioralCards(analytics) {
+            const members = analytics.member_behavioral_analysis || [];
+            const container = document.getElementById('memberCards');
+            
+            if (members.length === 0) {
+                container.innerHTML = `
+                    <div class="loading" style="grid-column:1/-1;">
+                        <p>No member behavioral data yet. Send messages in the linked Slack channel and click "Sync Slack Messages".</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Update cache
+            members.forEach(m => {
+                memberBehavioralCache[m.user_name] = {
+                    initial: m.initial_behavioral_score,
+                    current: m.current_behavioral_score,
+                    trend: m.trend
+                };
+            });
+
+            container.innerHTML = members.map(m => {
+                const fluctSign = m.fluctuation >= 0 ? '+' : '';
+                const fluctClass = m.fluctuation > 3 ? 'positive' : (m.fluctuation < -3 ? 'negative' : 'neutral');
+                const cardClass = m.alert ? 'alert-card' : (m.trend === 'improving' ? 'improving-card' : 'stable-card');
+                const trendIcon = { improving: '📈', declining: '📉', stable: '➡️' }[m.trend] || '➡️';
+                const trendLabel = { improving: 'Improving', declining: 'Declining', stable: 'Stable' }[m.trend] || 'Stable';
+                const badgeClass = m.has_data ? m.trend : 'no-data';
+
+                return `
+                    <div class="member-behavioral-card ${cardClass}">
+                        <div class="member-card-header">
+                            <div class="member-name">👤 ${escapeHtml(m.user_name)}</div>
+                            ${m.alert ? '<span class="member-alert-badge">⚠️ Alert</span>' : ''}
+                        </div>
+                        <div class="score-comparison">
+                            <div class="score-box">
+                                <div class="score-box-label">Initial Score</div>
+                                <div class="score-box-value initial-score">${m.initial_behavioral_score.toFixed(1)}</div>
+                            </div>
+                            <div class="score-box current-box">
+                                <div class="score-box-label">Current Score</div>
+                                <div class="score-box-value current-score">${m.current_behavioral_score.toFixed(1)}</div>
+                            </div>
+                        </div>
+                        <div class="fluctuation-row">
+                            <span class="fluctuation-label">Behavioral Change</span>
+                            <span class="fluctuation-value ${fluctClass}">${fluctSign}${m.fluctuation.toFixed(1)} pts (${fluctSign}${m.fluctuation_pct.toFixed(1)}%)</span>
+                        </div>
+                        <div class="member-trend-badge ${badgeClass}">
+                            ${m.has_data ? `${trendIcon} ${trendLabel}` : '❓ Not enough data'}
+                        </div>
+                        <div class="messages-count-note">
+                            ${m.has_data ? `Based on ${m.messages_analyzed} recent message${m.messages_analyzed !== 1 ? 's' : ''}` : 'No messages analyzed yet'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ============================================================
+        // MESSAGES
+        // ============================================================
         async function loadMessages() {
             if (!currentTeamId) return;
             
@@ -490,11 +956,9 @@
                 if (data.success) {
                     displayMessages(data.data);
                     document.getElementById('totalMessages').textContent = data.count;
-                    document.getElementById('lastUpdated').textContent = 
-                        new Date().toLocaleTimeString();
+                    document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
                 } else {
                     if (data.message && data.message.includes('No channel linked')) {
-                        // Channel was unlinked, refresh the page state
                         await checkChannelLink();
                     }
                 }
@@ -503,7 +967,6 @@
             }
         }
 
-        // Display messages in the UI
         function displayMessages(messages) {
             const container = document.getElementById('messagesList');
             
@@ -512,26 +975,50 @@
                     <div class="no-messages">
                         <p style="font-size: 3rem; margin-bottom: 1rem;">💬</p>
                         <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">No messages yet</p>
-                        <p style="font-size: 0.9rem; color: #999;">
-                            Messages will appear here when team members chat in the linked Slack channel
+                        <p style="font-size: 0.9rem; color: #999; margin-bottom: 1rem;">
+                            Messages will appear here when team members chat in the linked Slack channel.
+                        </p>
+                        <p style="font-size: 0.85rem; color: #3498db;">
+                            💡 If your channel has existing messages, click <strong>"Sync Slack Messages"</strong> above to import them.
                         </p>
                     </div>
                 `;
                 return;
             }
             
-            container.innerHTML = messages.map(msg => `
-                <div class="message">
-                    <div class="message-header">
-                        <span class="message-user">${escapeHtml(msg.user_name || 'Unknown User')}</span>
-                        <span class="message-time">${formatTimestamp(msg.timestamp)}</span>
+            container.innerHTML = messages.map(msg => {
+                const userName = msg.user_name || 'Unknown User';
+                const memberData = memberBehavioralCache[userName];
+                
+                let scoresBadgesHtml = '';
+                if (memberData) {
+                    const fluctVal = memberData.current - memberData.initial;
+                    const fluctSign = fluctVal >= 0 ? '+' : '';
+                    const trendClass = fluctVal > 3 ? 'trend-up' : (fluctVal < -3 ? 'trend-down' : 'trend-stable');
+                    const trendIcon = fluctVal > 3 ? '📈' : (fluctVal < -3 ? '📉' : '➡️');
+                    
+                    scoresBadgesHtml = `
+                        <div class="message-scores-row">
+                            <span class="msg-score-badge initial">Initial: ${memberData.initial.toFixed(1)}</span>
+                            <span class="msg-score-badge current">Current: ${memberData.current.toFixed(1)}</span>
+                            <span class="msg-score-badge ${trendClass}">${trendIcon} ${fluctSign}${fluctVal.toFixed(1)}</span>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="message">
+                        <div class="message-header">
+                            <span class="message-user">${escapeHtml(userName)}</span>
+                            <span class="message-time">${formatTimestamp(msg.timestamp)}</span>
+                        </div>
+                        ${scoresBadgesHtml}
+                        <div class="message-text">${escapeHtml(msg.text || msg.message || '')}</div>
                     </div>
-                    <div class="message-text">${escapeHtml(msg.text || msg.message || '')}</div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
-        // Format timestamp
         function formatTimestamp(timestamp) {
             const date = new Date(timestamp * 1000);
             return date.toLocaleString('en-US', {
@@ -542,41 +1029,37 @@
             });
         }
 
-        // Escape HTML to prevent XSS
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        // Show error message
         function showError(message) {
             const elem = document.getElementById('errorMessage');
             elem.textContent = message;
             elem.style.display = 'block';
-            setTimeout(() => elem.style.display = 'none', 5000);
+            setTimeout(() => elem.style.display = 'none', 7000);
         }
 
-        // Show success message
         function showSuccess(message) {
             const elem = document.getElementById('successMessage');
             elem.textContent = message;
             elem.style.display = 'block';
-            setTimeout(() => elem.style.display = 'none', 3000);
+            setTimeout(() => elem.style.display = 'none', 4000);
         }
 
-        // Navigate back to dashboard
         function goBack() {
             clearInterval(refreshInterval);
+            clearInterval(analyticsInterval);
             window.location.href = '/dashboard';
         }
 
-        // Initialize on page load
         window.addEventListener('DOMContentLoaded', initMonitoring);
         
-        // Clean up interval on page unload
         window.addEventListener('beforeunload', () => {
             clearInterval(refreshInterval);
+            clearInterval(analyticsInterval);
         });
     </script>
 </body>
