@@ -17,7 +17,7 @@ import threading
 # ============================================================================
 
 # Slack Bot Token (OAuth & Permissions → Bot User OAuth Token)
-SLACK_BOT_TOKEN = "xoxb-1244"
+SLACK_BOT_TOKEN = "xoxb-10313122964370-10341631935168-B02UyxaXrHvVqIr4FlZbZSOX"
 
 # MongoDB Setup
 client = MongoClient("mongodb://localhost:27017/")
@@ -99,6 +99,88 @@ def get_slack_channel_info(channel_id):
     except Exception as e:
         print(f"❌ Error fetching channel {channel_id}: {str(e)}")
         return None
+
+
+def fetch_and_store_channel_history(channel_id, team_id, lead_username, project_title, oldest=None):
+    """
+    Fetch message history directly from Slack API for a channel and store in MongoDB.
+    Used as a fallback when webhook isn't delivering messages.
+    Returns: number of new messages stored
+    """
+    url = "https://slack.com/api/conversations.history"
+    headers = {"Authorization": f"Bearer {SLACK_BOT_TOKEN}"}
+    
+    if oldest is None:
+        oldest = str(time.time() - 86400)  # Last 24 hours
+    
+    params = {
+        "channel": channel_id,
+        "oldest": oldest,
+        "limit": 200
+    }
+    
+    try:
+        response = requests.get(url, headers=headers, params=params, timeout=10)
+        data = response.json()
+        
+        if not data.get("ok"):
+            error = data.get("error", "unknown")
+            print(f"❌ Failed to fetch history for channel {channel_id}: {error}")
+            if error == "not_in_channel":
+                print(f"   ⚠️  Bot is NOT a member of channel {channel_id}. Invite the bot to this channel!")
+            return 0
+        
+        messages = data.get("messages", [])
+        new_count = 0
+        
+        for msg in messages:
+            # Skip bot messages, subtypes (joins, leaves, etc.)
+            if msg.get("subtype") or not msg.get("user"):
+                continue
+            
+            ts = msg.get("ts", "")
+            
+            # Check if already stored (avoid duplicates)
+            existing = slack_messages_collection.find_one({
+                "channel_id": channel_id,
+                "timestamp": float(ts)
+            })
+            if existing:
+                continue
+            
+            user_id = msg["user"]
+            user_name = resolve_slack_user(user_id)
+            text = msg.get("text", "")
+            
+            message_doc = {
+                "slack_user_id": user_id,
+                "user_name": user_name,
+                "channel_id": channel_id,
+                "project_title": project_title,
+                "project_id": project_title,
+                "team_id": team_id,
+                "lead_username": lead_username,
+                "message": text,
+                "text": text,
+                "timestamp": float(ts),
+                "datetime": datetime.fromtimestamp(float(ts)).isoformat(),
+                "created_at": float(ts),  # Use message timestamp so 24h filter works correctly
+                "date": datetime.fromtimestamp(float(ts)).strftime("%Y-%m-%d"),
+                "time": datetime.fromtimestamp(float(ts)).strftime("%H:%M:%S"),
+                "source": "history_fetch"
+            }
+            
+            slack_messages_collection.insert_one(message_doc)
+            new_count += 1
+        
+        if new_count > 0:
+            print(f"📥 Fetched {new_count} new messages from channel {channel_id} via API")
+        
+        return new_count
+        
+    except Exception as e:
+        print(f"❌ Error fetching channel history for {channel_id}: {str(e)}")
+        return 0
 
 
 def get_available_slack_channels():
@@ -264,7 +346,7 @@ def process_slack_message(event):
         "text": text,  # Duplicate for compatibility
         "timestamp": float(timestamp),
         "datetime": datetime.fromtimestamp(float(timestamp)).isoformat(),
-        "created_at": time.time(),
+        "created_at": float(timestamp),  # Use message timestamp (not ingest time) so 24h filter is accurate
         "date": datetime.fromtimestamp(float(timestamp)).strftime("%Y-%m-%d"),
         "time": datetime.fromtimestamp(float(timestamp)).strftime("%H:%M:%S")
     }
@@ -282,49 +364,202 @@ def process_slack_message(event):
 # ANALYTICS COMPUTATION
 # ============================================================================
 
+def score_messages_behaviorally(messages_text: str) -> float:
+    """
+    Simple keyword-based behavioral scoring of concatenated Slack messages.
+    Returns a score 0-100. Used when the RoBERTa model is unavailable.
+    Positive signals increase score, negative signals decrease it.
+    """
+    if not messages_text or not messages_text.strip():
+        return None  # No data
+
+    text = messages_text.lower()
+    base = 70.0
+
+    positive_keywords = [
+        "thanks", "thank you", "great", "good job", "well done", "appreciate",
+        "agree", "helpful", "sure", "happy to", "absolutely", "excellent",
+        "nice work", "awesome", "perfect", "will do", "on it", "done", "finished",
+        "completed", "delivered", "let me know", "sounds good", "yes", "correct",
+        "good point", "i can help"
+    ]
+    negative_keywords = [
+        "no", "won't", "can't", "refuse", "disagree", "wrong", "not my job",
+        "whatever", "doubt", "problem", "issue", "fail", "failed", "mistake",
+        "error", "terrible", "hate", "bad", "ugh", "annoying", "frustrated",
+        "late", "delay", "missed", "not done", "incomplete"
+    ]
+
+    pos_hits = sum(1 for kw in positive_keywords if kw in text)
+    neg_hits = sum(1 for kw in negative_keywords if kw in text)
+
+    score = base + (pos_hits * 1.5) - (neg_hits * 2.0)
+    return round(min(max(score, 0.0), 100.0), 1)
+
+
 def update_team_analytics(team_id, team_owner, project_title):
     """
-    Calculate and store real-time analytics for a team
-    Analyzes messages from the last 24 hours
+    Calculate and store real-time analytics for a team.
+    Computes:
+      - basic message stats (total, active users, top contributors, peak hours)
+      - per-member behavioral scores based on their Slack messages vs their initial score
+      - team-level compatibility trend based on member score changes
     """
     if not team_id:
         return
-    
-    # Get messages from last 24 hours
-    cutoff_time = time.time() - 86400  # 24 hours ago
-    
-    messages = list(slack_messages_collection.find({
-        "team_id": team_id,
-        "created_at": {"$gte": cutoff_time}
-    }))
-    
-    if not messages:
+
+    # ── 1. Get ALL stored messages for this team (not just 24h) ──────────────
+    all_messages = list(slack_messages_collection.find({"team_id": team_id}))
+
+    # ── 2. Get messages from last 24 hours for activity stats ─────────────────
+    cutoff_time = time.time() - 86400
+    recent_messages = [m for m in all_messages if m.get("created_at", 0) >= cutoff_time]
+
+    if not all_messages:
         print(f"⚠️  No messages found for team {team_id} in last 24h")
         return
-    
-    # Calculate metrics
-    total_messages = len(messages)
-    
-    # Unique active users
-    unique_users = len(set(msg["user_name"] for msg in messages))
-    
-    # Top contributors
+
+    total_messages = len(recent_messages)
+
+    # ── 3. Basic activity stats ────────────────────────────────────────────────
     user_message_counts = defaultdict(int)
-    for msg in messages:
-        user_message_counts[msg["user_name"]] += 1
+    for msg in recent_messages:
+        user_message_counts[msg.get("user_name", "Unknown")] += 1
+
+    unique_users = len(user_message_counts)
     top_contributors = sorted(user_message_counts.items(), key=lambda x: x[1], reverse=True)[:5]
-    
-    # Peak activity hours
+
     hour_counts = defaultdict(int)
-    for msg in messages:
-        hour = datetime.fromtimestamp(msg["timestamp"]).hour
-        hour_counts[hour] += 1
+    for msg in recent_messages:
+        try:
+            hour = datetime.fromtimestamp(float(msg.get("timestamp", 0))).hour
+            hour_counts[hour] += 1
+        except Exception:
+            pass
     peak_hours = sorted(hour_counts.items(), key=lambda x: x[1], reverse=True)[:3]
-    
-    # Calculate engagement score (messages per active user)
     engagement_score = round(total_messages / unique_users, 2) if unique_users > 0 else 0
-    
-    # Prepare analytics document
+
+    # ── 4. Load the saved team from UserTeams collection ──────────────────────
+    team_doc = db["UserTeams"].find_one({"id": team_id})
+    team_members = team_doc.get("members", []) if team_doc else []
+    # initial_compatibility is stored when team is saved
+    initial_compat = float(team_doc.get("compatibility_score", 0)) if team_doc else 0.0
+
+    # ── 5. Per-member behavioral analysis ────────────────────────────────────
+    # Map Slack display names → team member names (fuzzy: lowercase strip match)
+    def normalize_name(n):
+        return n.lower().strip() if n else ""
+
+    # Build a lookup: normalized_name → member dict
+    member_lookup = {}
+    for m in team_members:
+        member_lookup[normalize_name(m.get("name", ""))] = m
+
+    # Group ALL messages by user_name
+    messages_by_user = defaultdict(list)
+    for msg in all_messages:
+        messages_by_user[msg.get("user_name", "Unknown")].append(msg.get("text", ""))
+
+    # Get Slack channel members from actual Slack API to avoid showing non-members
+    channel_link = project_slack_channels_collection.find_one({"team_id": team_id})
+    channel_members_slack = set()
+    if channel_link and channel_link.get("channel_id"):
+        try:
+            url = "https://slack.com/api/conversations.members"
+            headers = {"Authorization": f"Bearer {SLACK_BOT_TOKEN}"}
+            resp = requests.get(url, headers=headers,
+                                params={"channel": channel_link["channel_id"]}, timeout=5)
+            resp_data = resp.json()
+            if resp_data.get("ok"):
+                for uid in resp_data.get("members", []):
+                    uname = resolve_slack_user(uid)
+                    channel_members_slack.add(normalize_name(uname))
+        except Exception as e:
+            print(f"⚠️  Could not fetch channel members: {e}")
+
+    # Build member behavioral analysis — only for actual team members
+    member_behavioral_analysis = []
+    for member in team_members:
+        member_name = member.get("name", "")
+        norm_name = normalize_name(member_name)
+        initial_score = float(member.get("behavioral_score", 70.0))
+
+        # Find messages from this member — try exact then partial name match
+        user_texts = messages_by_user.get(member_name, [])
+        if not user_texts:
+            # Try matching Slack display name to team member name (partial)
+            for slack_name, texts in messages_by_user.items():
+                if (normalize_name(slack_name) == norm_name or
+                        norm_name in normalize_name(slack_name) or
+                        normalize_name(slack_name) in norm_name):
+                    user_texts = texts
+                    break
+
+        has_data = len(user_texts) >= 1
+        messages_analyzed = len(user_texts)
+
+        if has_data:
+            combined_text = " ".join(user_texts[:20])  # cap at 20 messages for scoring
+            current_score = score_messages_behaviorally(combined_text)
+            if current_score is None:
+                current_score = initial_score
+                has_data = False
+        else:
+            current_score = initial_score
+
+        fluctuation = round(current_score - initial_score, 1)
+        fluctuation_pct = round((fluctuation / initial_score * 100), 1) if initial_score > 0 else 0.0
+
+        if has_data and messages_analyzed >= 2:
+            if fluctuation > 3:
+                trend = "improving"
+            elif fluctuation < -3:
+                trend = "declining"
+            else:
+                trend = "stable"
+        else:
+            trend = "stable"
+
+        alert = has_data and fluctuation < -10
+
+        member_behavioral_analysis.append({
+            "user_name": member_name,
+            "initial_behavioral_score": round(initial_score, 1),
+            "current_behavioral_score": round(current_score, 1),
+            "fluctuation": fluctuation,
+            "fluctuation_pct": fluctuation_pct,
+            "trend": trend,
+            "alert": alert,
+            "has_data": has_data,
+            "messages_analyzed": messages_analyzed
+        })
+
+    # ── 6. Team compatibility trend ───────────────────────────────────────────
+    members_with_data = [m for m in member_behavioral_analysis if m["has_data"]]
+    if members_with_data:
+        avg_fluctuation = sum(m["fluctuation"] for m in members_with_data) / len(members_with_data)
+        # Approximate current compatibility by adjusting initial
+        current_compat = round(max(0.0, min(100.0, initial_compat + avg_fluctuation * 0.5)), 1)
+        compat_change = round(current_compat - initial_compat, 1)
+        if compat_change > 2:
+            compat_trend = "improving"
+        elif compat_change < -2:
+            compat_trend = "declining"
+        else:
+            compat_trend = "stable"
+    else:
+        current_compat = initial_compat
+        compat_change = 0.0
+        compat_trend = "stable"
+
+    team_compatibility = {
+        "initial_score": round(initial_compat, 1),
+        "current_score": current_compat,
+        "change": compat_change,
+        "trend": compat_trend
+    }
+
+    # ── 7. Save analytics document ────────────────────────────────────────────
     analytics_doc = {
         "team_id": team_id,
         "team_owner": team_owner,
@@ -335,18 +570,20 @@ def update_team_analytics(team_id, team_owner, project_title):
         "engagement_score": engagement_score,
         "peak_activity_hours": [{"hour": h, "messages": c} for h, c in peak_hours],
         "top_contributors": [{"name": n, "messages": c} for n, c in top_contributors],
+        "member_behavioral_analysis": member_behavioral_analysis,
+        "team_compatibility": team_compatibility,
         "last_updated": time.time(),
         "last_updated_iso": datetime.now().isoformat()
     }
-    
-    # Update or insert analytics
+
     team_analytics_collection.update_one(
         {"team_id": team_id, "period": "last_24h"},
         {"$set": analytics_doc},
         upsert=True
     )
-    
-    print(f"📊 Analytics updated for team {team_id}: {total_messages} messages, {unique_users} active members")
+
+    print(f"📊 Analytics updated for team {team_id}: {total_messages} msgs, "
+          f"{unique_users} active, compat {initial_compat}→{current_compat}")
 
 
 # ============================================================================
@@ -355,27 +592,53 @@ def update_team_analytics(team_id, team_owner, project_title):
 
 def scheduled_analytics_update():
     """
-    Background job to update analytics for all active teams
-    Runs every 5 minutes
+    Background job to update analytics for all active teams.
+    Runs every 5 minutes.
+    Also fetches message history directly from Slack API as a fallback
+    in case the webhook is not delivering events (e.g. ngrok expired, bot not in channel).
     """
     while True:
         try:
             print("\n🔄 Running scheduled analytics update...")
             
-            active_teams = user_teams_collection.find({"status": "active"})
+            active_teams = list(user_teams_collection.find({"status": "active"}))
             
             for team in active_teams:
                 team_id = team.get("id")
                 team_owner = team.get("username")
                 project_title = team.get("project_title")
                 
-                if team_id and team_owner and project_title:
-                    update_team_analytics(team_id, team_owner, project_title)
+                if not (team_id and team_owner and project_title):
+                    continue
+                
+                # --- Fallback: fetch messages directly from Slack API ---
+                # Look up the linked Slack channel for this team
+                channel_link = project_slack_channels_collection.find_one({"team_id": team_id})
+                if channel_link:
+                    channel_id = channel_link.get("channel_id")
+                    if channel_id:
+                        oldest = str(time.time() - 86400)  # last 24h
+                        fetched = fetch_and_store_channel_history(
+                            channel_id=channel_id,
+                            team_id=team_id,
+                            lead_username=team_owner,
+                            project_title=project_title,
+                            oldest=oldest
+                        )
+                        if fetched > 0:
+                            print(f"   ✅ Pulled {fetched} messages from Slack API for team {team_id}")
+                else:
+                    print(f"   ⚠️  Team {team_id} has no linked Slack channel. Use /api/link-channel to set one.")
+                # --------------------------------------------------------
+                
+                update_team_analytics(team_id, team_owner, project_title)
             
             print("✅ Scheduled analytics update complete")
             
         except Exception as e:
             print(f"❌ Error in scheduled analytics: {str(e)}")
+            import traceback
+            traceback.print_exc()
         
         # Wait 5 minutes
         time.sleep(300)
@@ -463,6 +726,48 @@ def get_available_channels():
         
     except Exception as e:
         print(f"❌ Error fetching available channels: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "message": str(e)})
+
+
+@app.route('/api/fetch-channel-history/<team_id>', methods=['POST'])
+def fetch_history_for_team(team_id):
+    """
+    Manually trigger a Slack history fetch for a team's linked channel.
+    Called by the "Sync Slack Messages" button in the monitor UI.
+    """
+    try:
+        channel_link = project_slack_channels_collection.find_one({"team_id": team_id})
+        if not channel_link:
+            return jsonify({"success": False, "message": "No Slack channel linked to this team"})
+
+        channel_id = channel_link.get("channel_id")
+        lead_username = channel_link.get("lead_username", "")
+        project_title = channel_link.get("project_title", "")
+
+        # Fetch last 7 days of history so existing messages are captured
+        oldest = str(time.time() - 7 * 86400)
+        new_count = fetch_and_store_channel_history(
+            channel_id=channel_id,
+            team_id=team_id,
+            lead_username=lead_username,
+            project_title=project_title,
+            oldest=oldest
+        )
+
+        # Re-run analytics immediately after fetching
+        team_doc = db["UserTeams"].find_one({"id": team_id})
+        if team_doc:
+            update_team_analytics(team_id, team_doc.get("username", ""), team_doc.get("project_title", ""))
+
+        return jsonify({
+            "success": True,
+            "message": f"Synced {new_count} new messages from #{channel_link.get('channel_name', channel_id)}",
+            "new_messages": new_count
+        })
+    except Exception as e:
+        print(f"❌ Error in fetch_history_for_team: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({"success": False, "message": str(e)})
@@ -601,6 +906,70 @@ def get_dashboard_stats():
         return jsonify({"success": False, "message": str(e)})
 
 
+@app.route('/api/diagnostics', methods=['GET'])
+def diagnostics():
+    """
+    Diagnostic endpoint: checks Slack bot token validity, channel memberships,
+    and message counts per team. Useful for debugging webhook delivery issues.
+    """
+    try:
+        results = {}
+        
+        # 1. Check bot token
+        auth_resp = requests.get(
+            "https://slack.com/api/auth.test",
+            headers={"Authorization": f"Bearer {SLACK_BOT_TOKEN}"},
+            timeout=5
+        ).json()
+        results["bot_token_valid"] = auth_resp.get("ok", False)
+        results["bot_name"] = auth_resp.get("user", "unknown")
+        if not auth_resp.get("ok"):
+            results["token_error"] = auth_resp.get("error")
+        
+        # 2. Check each linked channel
+        cutoff = time.time() - 86400
+        channel_checks = []
+        for link in project_slack_channels_collection.find():
+            channel_id = link.get("channel_id")
+            team_id = link.get("team_id")
+            
+            # Check bot membership
+            ch_resp = requests.get(
+                "https://slack.com/api/conversations.info",
+                headers={"Authorization": f"Bearer {SLACK_BOT_TOKEN}"},
+                params={"channel": channel_id},
+                timeout=5
+            ).json()
+            
+            is_member = False
+            channel_name = channel_id
+            if ch_resp.get("ok"):
+                ch = ch_resp.get("channel", {})
+                is_member = ch.get("is_member", False)
+                channel_name = ch.get("name", channel_id)
+            
+            # Count stored messages in last 24h
+            msg_count = slack_messages_collection.count_documents({
+                "team_id": team_id,
+                "created_at": {"$gte": cutoff}
+            })
+            
+            channel_checks.append({
+                "team_id": team_id,
+                "channel_id": channel_id,
+                "channel_name": channel_name,
+                "bot_is_member": is_member,
+                "messages_last_24h_in_db": msg_count,
+                "warning": None if is_member else "⚠️ Bot is NOT in this channel! Run: /invite @<bot_name> in the channel."
+            })
+        
+        results["channels"] = channel_checks
+        
+        return jsonify({"success": True, "data": results})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+
 @app.route('/health', methods=['GET'])
 def health():
     """Health check endpoint"""
@@ -641,4 +1010,3 @@ if __name__ == '__main__':
     
     # Run Flask app
     app.run(debug=True, host='0.0.0.0', port=5001, use_reloader=False)
-
